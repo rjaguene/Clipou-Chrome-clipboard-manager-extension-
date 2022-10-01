@@ -1,0 +1,29 @@
+{
+  "ext_name": {
+    "message": "Clippa: Recent Clipboard History"
+  },
+  "ext_description": {
+    "message": "Extend the capability of your clipboard with a list of your recent clipboard history."
+  },
+  "list_empty": {
+    "message": "No Clips"
+  },
+  "option_max": {
+    "message": "Maximum Clips"
+  },
+  "option_max_15": {
+    "message": "15"
+  },
+  "option_max_25": {
+    "message": "25"
+  },
+  "option_max_50": {
+    "message": "50"
+  },
+  "option_max_100": {
+    "message": "100"
+  },
+  "option_clear": {
+    "message": "Clear All Clips"
+  }
+}
