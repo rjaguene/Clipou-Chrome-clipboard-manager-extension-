@@ -58,7 +58,7 @@ function setupListeners() {
 
 async function onNavItemClicked(e) {
   let target = e.target;
-  let value = target.getAttribute("data-value");
+  let value = target.dataset.value;
   await copyToClipboard(value);
   showListClickFeedback();
 }
