@@ -105,6 +105,7 @@ function documentOnKeydown(e) {
 
 function documentOnMouseout(e) {
   removeAllSelections();
+  navIndex = null;
 }
 
 function setupNavigation() {
@@ -115,6 +116,7 @@ function setupNavigation() {
       "mouseover",
       function (e) {
         removeAllSelections();
+        navIndex = null;
         this.classList.add("selected");
         navIndex = i;
       },
@@ -137,7 +139,7 @@ function navigateDirection(e) {
       break;
   }
 
-  if (navIndex <= 1) scrollToTop();
+  if (navIndex <= 0) scrollToTop();
   if (navIndex >= listNavItems.length - 1) scrollToBottom();
 
   listNavItems[navIndex].classList.add("selected");
@@ -169,6 +171,7 @@ function navigateListUp() {
 }
 
 function clickItemByIndex(index) {
+  removeAllSelections();
   let el = listNavItems[index];
 
   if (el) {
@@ -186,8 +189,6 @@ function removeAllSelections() {
   for (let item of listNavItems) {
     item.classList.remove("selected");
   }
-
-  navIndex = null;
 }
 
 function scrollToTop() {
