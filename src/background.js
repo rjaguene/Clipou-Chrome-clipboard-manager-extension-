@@ -145,7 +145,7 @@ async function truncateClips() {
   let clips = await storage.load("clips", []);
   let maxClips = parseInt(await storage.load("max-clips", 15));
 
-  console.log(clips, maxClips);
+ 
 
   if (clips.length > maxClips) {
     clips.length = maxClips;

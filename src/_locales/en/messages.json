@@ -1,9 +1,9 @@
 {
   "ext_name": {
-    "message": "Clippa: Recent Clipboard History"
+    "message": "Clipou: Clipboard History Manager"
   },
   "ext_description": {
-    "message": "Extend the capability of your clipboard with a list of your recent clipboard history."
+    "message": "Manage all your Clipps in one app"
   },
   "list_empty": {
     "message": "No Clips"

@@ -17,6 +17,7 @@ export function save(key, value) {
 }
 
 export function load(key, defaults) {
+  
   return new Promise((resolve, reject) => {
     chrome.storage.local.get(
       {

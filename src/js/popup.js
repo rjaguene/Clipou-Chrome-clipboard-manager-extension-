@@ -2,58 +2,129 @@
 
 import * as storage from "./storage.js";
 
-let listNavItems;
-let navIndex;
-
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
   await loadData();
-  setupNavigation();
   setupListeners();
+  setFav();
 }
 
 async function loadData() {
   let data = await storage.load("clips", []);
+  let dataFav = await storage.load("clipsFavv", []);
+  renderList(dataFav);
   renderList(data);
 }
 
 function renderList(data) {
-  let list = document.getElementById("list");
+  const uniq = [...new Set(data)];
 
-  data.forEach((item, i) => {
-    let li = document.createElement("li");
-    let text = document.createElement("span");
-    let key = document.createElement("span");
+  uniq.forEach((item, i) => {
 
-    li.setAttribute("data-value", item);
-    li.setAttribute("title", item);
-    li.classList.add("item", "nav-index");
+    const container = document.createElement("div");
+    container.classList.add('elements', 'line');
+    container.id = 'asset_touchbox';
 
-    text.innerText = item.replace(/\n/, " ");
-    text.classList.add("content");
+    let txt = document.createElement('p');
+    txt.classList.add("txt");
 
-    li.appendChild(text);
-
-    if (i < 9) {
-      key.innerText = i + 1;
-      key.classList.add("key");
-      li.appendChild(key);
+    txt.innerHTML = item.slice(0, 125);
+    if (item.length >= 175){
+      txt.innerHTML += '...';
     }
+    let icon1 = document.createElement('img');
+    icon1.setAttribute("data-value", item);
+    icon1.setAttribute("title", item);
+    icon1.classList.add("item", "copyBtn");
+    icon1.src = '../images/CopyIcon.png';
 
-    list.appendChild(li);
+    let icon2 = document.createElement('img');
+    icon2.setAttribute("data-value", item);
+    icon2.setAttribute("title", item);
+    icon2.classList.add("item", "elemFav");
+    icon2.src = '../images/FavIconOff.png';
+    icon2.id = item;
+
+    let icon3 = document.createElement('img');
+    icon3.setAttribute("data-value", item);
+    icon3.setAttribute("title", item);
+    icon3.classList.add("item", "elemDelete");
+    icon3.src = '../images/DeleteIcon.png';
+
+    container.appendChild(txt);
+    container.appendChild(icon1);
+    container.appendChild(icon2);
+    container.appendChild(icon3);
+
+    document.querySelector('#root').appendChild(container);
   });
 }
 
 function setupListeners() {
-  let navItems = document.querySelectorAll(".nav-index");
+  let navItems = document.querySelectorAll(".copyBtn");
+  let favItem = document.querySelectorAll(".elemFav");
+  let deleteItems = document.querySelectorAll(".elemDelete");
 
   for (let item of navItems) {
     item.addEventListener("click", onNavItemClicked);
   }
 
-  document.addEventListener("keydown", documentOnKeydown, false);
-  document.addEventListener("mouseout", documentOnMouseout, false);
+  for (let itemDel of deleteItems) {
+    itemDel.addEventListener("click", onNavItemClickedDelete);
+  }
+
+  for (let fav of favItem) {
+    fav.addEventListener("click", onNavItemClickedFav);
+  }
+}
+
+async function setFav() {
+  let data = await storage.load("clipsFavv", []);
+
+  data.forEach(item => {
+    document.getElementById(item).src = '../images/FavIconOn.png';
+  })
+}
+
+async function onNavItemClickedFav(e) {
+  let target = e.target;
+  let value = target.dataset.value;
+
+  document.getElementById(value).src = '../images/FavIconOn.png'
+
+
+  let data = await storage.load("clipsFavv", []);
+  let data2 = await storage.load("clips", []);
+
+  if (value.length > 0 && data.includes(value) == false) {
+    data.unshift(value);
+    await storage.save("clipsFavv", data);
+
+    let newarr = data2.filter(a => a !== value)
+    storage.save("clips", newarr);
+  } else {
+    let newarr = data.filter(a => a !== value)
+    await storage.save("clipsFavv", newarr);
+    data2.unshift(value);
+    await storage.save("clips", data2);
+  }
+  document.getElementById("root").innerHTML = "";
+  init()
+}
+
+async function onNavItemClickedDelete(e) {
+  let target = e.target;
+  let value = target.dataset.value;
+  let data = await storage.load("clips", []);
+  let dataFav = await storage.load("clipsFavv", []);
+
+  let newarr = data.filter(a => a !== value)
+  let newarrFav = dataFav.filter(a => a !== value)
+  storage.save("clips", newarr);
+  storage.save("clipsFavv", newarrFav);
+  document.getElementById("root").innerHTML = "";
+  init()
 }
 
 async function onNavItemClicked(e) {
@@ -64,137 +135,16 @@ async function onNavItemClicked(e) {
 }
 
 function showListClickFeedback() {
-  let interval = 100;
+  let interval = 150;
 
   setTimeout(() => {
-    listNavItems[navIndex].classList.remove("selected");
-  }, 0);
-
+    document.getElementById("copy").style.display = "block";
+  }, interval * 1);
   setTimeout(() => {
-    listNavItems[navIndex].classList.add("selected");
-  }, interval);
-
-  setTimeout(() => {
-    listNavItems[navIndex].classList.remove("selected");
-  }, interval * 2);
-
-  setTimeout(() => {
-    listNavItems[navIndex].classList.add("selected");
-  }, interval * 3);
-
-  setTimeout(() => {
-    window.close();
+     window.close();
   }, interval * 4);
 }
 
 async function copyToClipboard(value) {
   await navigator.clipboard.writeText(value);
-}
-
-function documentOnKeydown(e) {
-  if (e.key >= "1" && e.key <= "9") {
-    clickItemByIndex(e.key - 1);
-  } else if (e.key === "ArrowDown" || e.key === "ArrowUp") {
-    navigateDirection(e);
-  } else if (e.key === "Enter") {
-    clickSelectedItem();
-  } else if (e.key === "Backspace" && listNavItems[navIndex].dataset.id) {
-    deleteSelectedDocument();
-  }
-}
-
-function documentOnMouseout(e) {
-  removeAllSelections();
-  navIndex = null;
-}
-
-function setupNavigation() {
-  listNavItems = document.querySelectorAll(".nav-index");
-
-  for (let [i, item] of listNavItems.entries()) {
-    item.addEventListener(
-      "mouseover",
-      function (e) {
-        removeAllSelections();
-        navIndex = null;
-        this.classList.add("selected");
-        navIndex = i;
-      },
-      false
-    );
-  }
-}
-
-function navigateDirection(e) {
-  e.preventDefault();
-
-  switch (e.key) {
-    case "ArrowDown":
-      setNavIndex();
-      navigateListDown();
-      break;
-    case "ArrowUp":
-      setNavIndex();
-      navigateListUp();
-      break;
-  }
-
-  if (navIndex <= 0) scrollToTop();
-  if (navIndex >= listNavItems.length - 1) scrollToBottom();
-
-  listNavItems[navIndex].classList.add("selected");
-  listNavItems[navIndex].scrollIntoView({ block: "nearest" });
-}
-
-function setNavIndex() {
-  if (!navIndex) {
-    navIndex = 0;
-  }
-}
-
-function navigateListDown() {
-  if (listNavItems[navIndex].classList.contains("selected")) {
-    listNavItems[navIndex].classList.remove("selected");
-    navIndex !== listNavItems.length - 1 ? navIndex++ : listNavItems.length - 1;
-  } else {
-    navIndex = 0;
-  }
-}
-
-function navigateListUp() {
-  if (listNavItems[navIndex].classList.contains("selected")) {
-    listNavItems[navIndex].classList.remove("selected");
-    navIndex !== 0 ? navIndex-- : 0;
-  } else {
-    navIndex = listNavItems.length - 1;
-  }
-}
-
-function clickItemByIndex(index) {
-  removeAllSelections();
-  let el = listNavItems[index];
-
-  if (el) {
-    navIndex = index;
-    el.click();
-  }
-}
-
-function clickSelectedItem(e) {
-  let el = listNavItems[navIndex];
-  el.click();
-}
-
-function removeAllSelections() {
-  for (let item of listNavItems) {
-    item.classList.remove("selected");
-  }
-}
-
-function scrollToTop() {
-  window.scrollTo(0, 0);
-}
-
-function scrollToBottom() {
-  window.scrollTo(0, document.body.scrollHeight);
 }
