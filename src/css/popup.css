@@ -66,8 +66,8 @@ h1 {
   margin-top: 2%;
 }
 
-.nav-indexDel:hover,
-.nav-indexFav:hover,
+.elemFav:hover,
+.elemDelete:hover,
 .copyBtn:hover {
   opacity: 0.5;
 }
